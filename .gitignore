@@ -1,0 +1,17 @@
+# gitignore
+
+##########################
+# eclipse project
+##########################
+
+aimir-*/.project
+
+aimir-*/.classpath
+
+aimir-*/.settings/
+
+##################################
+# aimir-web properties (db info)
+##################################
+
+aimir-web/src/main/resources/jdbc.properties
