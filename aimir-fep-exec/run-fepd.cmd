@@ -1,2 +1,0 @@
-@echo on
-mvn -e -f pom-fepd.xml antrun:run -DfepName=FEP1 -Dfile.encoding=EUC_KR -DjmxPort=1299 -DenableWS=true -Declipselink.path=C:/Users/nuri/.m2/repository/org/eclipse/persistence/eclipselink/2.6.0-M3 -DlocalRepository=C:/Users/nuri/.m2/repository

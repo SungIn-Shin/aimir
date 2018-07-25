@@ -1,1 +1,0 @@
-mvn -e exec:java -Dexec.mainClass=com.aimir.util.MakeProperties

@@ -1,1 +1,0 @@
-mvn -f pom-customerinfo.xml -Dname=CMS -Dfilename=AIMIR_CUSTOMER_DATA_20150605_OUT.xls antrun:run
