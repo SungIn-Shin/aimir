@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>  
+<dataset> 
+<mvm.DisplayChannel name="Active Energy"        localName="Active Energy"        serviceType="Electricity" unit="kWh" chMethod="SUM"/>
+    <mvm.DisplayChannel name="Active Power"         localName="Active Power"         serviceType="Electricity" unit="kW" chMethod="MAX"/>
+    <mvm.ChannelConfig meterConfig="Aidon 5530" channel="Active Energy"        channelIndex="1"   dataType="LpEM" displayType="SaveAndDisplay" />
+    <mvm.ChannelConfig meterConfig="Aidon 5530" channel="Active Power"          channelIndex="2"   dataType="LpEM" displayType="DisplayOnly" />
+</dataset>

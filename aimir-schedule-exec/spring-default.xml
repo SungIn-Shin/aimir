@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+  <context:property-placeholder location="config/schedule.properties"/>
+
+  <bean id="hikariConfig" class="com.zaxxer.hikari.HikariConfig">
+    <property name="poolName" value="springHikariCP" />
+    <property name="dataSourceClassName" value="${jdbc.driverClassName}" />
+    <property name="maximumPoolSize" value="${jdbc.maximumSize}" />
+    <property name="minimumIdle" value="${jdbc.minimumIdleSize}"/>
+    <property name="autoCommit" value="false"/>
+    <property name="idleTimeout" value="30000" />
+    
+    <property name="dataSourceProperties">
+      <props>
+        <prop key="url">${jdbc.url}</prop>
+        <prop key="user">${jdbc.username}</prop>
+        <prop key="password">${jdbc.password}</prop>
+      </props>
+    </property>
+  </bean>
+    
+  <!-- HikariCP configuration -->
+  <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+    <constructor-arg ref="hikariConfig" />
+  </bean>
+
+  <!-- Annotation Support Hibernate Session Factory -->
+  <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+    <property name="dataSource" ref="dataSource" />
+    <property name="hibernateProperties">
+      <props>
+        <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+        <prop key="hibernate.format_sql">true</prop>
+        <prop key="hibernate.show_sql">false</prop>
+        <prop key="hibernate.bytecode.use_reflection_optimizer">true</prop>
+        <prop key="hibernate.use_sql_comments">false</prop>
+        <!--<prop key="hibernate.hbm2ddl.auto">create-drop</prop>-->
+        <!--<prop key="hibernate.hbm2ddl.auto">create</prop> -->
+        <prop key="hibernate.hbm2ddl.auto">false</prop>
+        <prop key="hibernate.connection.autocommit">false</prop>
+        <!--<prop key="hibernate.query.substitutions">Y</prop>-->
+        <prop key="hibernate.cache.use_second_level_cache">true</prop>
+        <prop key="hibernate.cache.use_second_level_cache">org.hibernate.cache.EhCacheProvider</prop>
+        <!-- Turn batching off for better error messages under PostgreSQL>-->
+        <!--prop key="hibernate.jdbc.batch_size">0</prop-->
+        <!-- 0:none, 1:read_uncommitted, 2:read_committed, 4:repeatable_read, 8:serializable -->
+        <prop key="hibernate.connection.isolation">1</prop>
+        <prop key="hibernate.transaction.flush_before_completion">true</prop>
+        <prop key="hibernate.transaction.auto_close_session">false</prop>
+        <prop key="hibernate.default_schema">${jdbc.username}</prop>
+      </props>
+    </property>
+    <property name="packagesToScan" value="com.aimir.model.*"/>
+  </bean>
+
+  <!-- Transaction manager for a single Hibernate SessionFactory (alternative to JTA) -->
+  <bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+    <property name="sessionFactory" ref="sessionFactory"/>
+  </bean>
+
+  <bean id="ecgMonthlyBillingTask" class="com.aimir.schedule.task.ECGBillingMonthlyTask" />
+
+  <!-- Activates scanning of @Autowired -->            
+  <context:annotation-config/>
+
+  <!-- Scans for @Repository, @Service -->
+  <context:component-scan base-package="com.aimir">
+    <!-- <context:exclude-filter type="regex" expression="com\.aimir\.fep.*"/>-->
+    <context:exclude-filter type="regex" expression="com\.aimir\.fep\.adapter.*"/>
+    <context:exclude-filter type="regex" expression="com\.aimir\.fep\.command.*"/>
+    <context:exclude-filter type="regex" expression="com\.aimir\.fep\.meter.*"/>
+    <context:exclude-filter type="regex" expression="com\.aimir\.fep\.protocol.*"/>
+    <context:exclude-filter type="regex" expression="com\.aimir\.fep\.schedule.*"/>
+    <context:exclude-filter type="regex" expression="com\.aimir\.fep\.tool.*"/>
+    <context:exclude-filter type="regex" expression="com\.aimir\.fep\.trap.*"/>
+    <context:exclude-filter type="regex" expression="com\.aimir\.fep\.util\.IHDEventMessageUtil"/>
+  </context:component-scan>
+    
+  <!-- Enable @Transactional support -->
+  <tx:annotation-driven transaction-manager="transactionManager" />
+
+  <!-- Enable @AspectJ support -->
+  <aop:aspectj-autoproxy/>
+
+  <bean id="sessionContextFactory" class="org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean">
+    <property name="targetBeanName" value="sessionContext" />
+  </bean>
+    
+  <bean id="activeMQConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+    <property name="brokerURL">
+      <value>${activemq.broker.url}</value>
+    </property>
+  </bean>
+
+  <bean id="activeCachingConnectionFactory" class="org.springframework.jms.connection.CachingConnectionFactory">
+    <property name="targetConnectionFactory" ref="activeMQConnectionFactory"/>
+    <property name="reconnectOnException" value="true"/>
+  </bean>
+    
+  <bean id="activeJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+    <property name="connectionFactory">
+      <ref bean="activeCachingConnectionFactory"/>
+    </property>
+  </bean>
+</beans>

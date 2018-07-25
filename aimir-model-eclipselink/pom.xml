@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.aimir</groupId>
+    <artifactId>aimir-parent</artifactId>
+    <version>3.3</version>
+    <relativePath>../aimir-parent/pom.xml</relativePath>
+  </parent>
+  
+  <artifactId>aimir-model-eclipselink</artifactId>
+  <version>${aimir.version}</version>
+  
+  <build>
+    <defaultGoal>install</defaultGoal>
+    <pluginManagement>
+      <plugins>
+        <!-- Java Compiler -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+          <!-- 
+            <source>1.8</source>
+            <target>1.8</target>
+             -->
+            <encoding>UTF-8</encoding>
+            <exclude>/src/main/java/init/*.java</exclude>
+          </configuration>
+        </plugin>
+        <!-- init data -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <executions>
+            <execution>
+              <goals>
+                <goal>run</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <tasks>
+              <property name="runtime_classpath" refid="maven.runtime.classpath"/>
+              <echo message="runtime classpath: ${runtime_classpath}"/>
+              <java dir="${basedir}"
+                    classname="com.aimir.init.InitData"
+                    fork="true"
+                    maxmemory="512M"
+                    >
+                <!-- <jvmarg value="-javaagent:${eclipselink.path}/${eclipselink.version}/eclipselink-${eclipselink.version}.jar"/> -->
+                <jvmarg value="-javaagent:${spring.instrument.path}/${spring.version.4}/spring-instrument-${spring.version.4}.jar"/>
+                <sysproperty key="file.encoding" value="${file.encoding}"/>
+                <sysproperty key="log4j.configuration" value="config/log4j.properties" />
+                <arg value="${dataFile}"/>
+                <classpath>
+                  <pathelement path=".:${runtime_classpath}"/>
+                </classpath>
+              </java>
+            </tasks>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>src/main/java</directory>
+        <includes>
+          <include>**/*.xml</include>
+        </includes>
+      </resource>
+    </resources>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.aimir</groupId>
+      <artifactId>aimir-model-weave</artifactId>
+      <version>${aimir.version}</version>
+    </dependency>
+    
+    <!-- =========================== -->
+    <!--    Spring Framework WebMVC  -->
+    <!-- =========================== -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webmvc</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.zaxxer</groupId>
+      <artifactId>HikariCP</artifactId>
+      <version>${HikariCP.version}</version>
+    </dependency>
+
+    <!-- ====================== -->
+    <!--  Dependency for Test   -->
+    <!-- ====================== -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <version>${spring.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+    </dependency>
+        
+    <dependency>
+      <groupId>org.dbunit</groupId>
+      <artifactId>dbunit</artifactId>
+      <version>${dbunit.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-integration</artifactId>
+      <version>${spring.boot.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
+      <version>${spring.boot.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+  </dependencies>
+</project>
